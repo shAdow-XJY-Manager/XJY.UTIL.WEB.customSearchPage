@@ -15,8 +15,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'shadow search',
-      theme: ThemeData(fontFamily: null,),
+      title: 'Shadow Search',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF685BFF)),
+        useMaterial3: true,
+      ),
       home: const HomePage(),
     );
   }

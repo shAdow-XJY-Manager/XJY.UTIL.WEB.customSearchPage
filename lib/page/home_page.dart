@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_search_page/component/animation_opacity.dart';
 import 'package:custom_search_page/page/custom_search_bar.dart';
 import 'package:custom_search_page/page/setting_dialog.dart';
@@ -149,17 +148,18 @@ class _HomePageState extends State<HomePage> {
                     child: ValueListenableBuilder<int>(
                       valueListenable: boxFitOptionNotifier,
                       builder: (context, boxFitOption, child) {
-                        return CachedNetworkImage(
+                        return Image.network(
+                          '${WebSiteLink.baseResourceLink}/assets/img/background.jpg',
                           fit: boxFitList[boxFitOption],
                           filterQuality: FilterQuality.high,
-                          imageUrl:
-                              '${WebSiteLink.baseResourceLink}/assets/img/background.jpg',
-                          progressIndicatorBuilder:
-                              (context, str, downloadProgress) => Center(
-                            child: LoadingBouncingGrid.square(),
-                          ),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: LoadingBouncingGrid.square(),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Center(child: Icon(Icons.error, size: 48)),
                         );
                       },
                     ),

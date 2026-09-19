@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 
@@ -120,8 +119,17 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
             child: IconButton(
               tooltip: engineName[engineOption],
               hoverColor: Colors.transparent,
-              icon: Image(
-                image: CachedNetworkImageProvider('${WebSiteLink.baseResourceLink}/assets/icon/${engineName[engineOption]}.png',),
+              icon: Image.network(
+                '${WebSiteLink.baseResourceLink}/assets/icon/${engineName[engineOption]}.png',
+                errorBuilder: (context, error, stackTrace) => const Icon(Icons.search),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                },
               ),
               onPressed: () {
                 setState(() {
