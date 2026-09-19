@@ -3,7 +3,7 @@
 A web Flutter project, for import different search engine
 
 ## deploy
-[https://shadowplusing.website/custom_search_page/#/](https://shadowplusing.website/custom_search_page/#/)
+[https://shadowplusing.cn/XJY.UTIL.WEB.customSearchPage/#/](https://shadowplusing.cn/XJY.UTIL.WEB.customSearchPage/#/)
 
 ## support
 <details>
