@@ -1,26 +1,8 @@
-import 'package:custom_search_page/page/home_page.dart';
-import 'package:custom_search_page/service/app_get_it.dart';
 import 'package:flutter/material.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await setupAppGetIt();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
+import 'frequency_search.dart';
+import 'theme/frequency_theme.dart';
+void main()=>runApp(const MyApp());
+class MyApp extends StatelessWidget{
   const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Shadow Search',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF685BFF)),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
-    );
-  }
+  @override Widget build(BuildContext context)=>MaterialApp(title:'频率搜索',debugShowCheckedModeBanner:false,theme:FrequencyTheme.dark(),home:const FrequencySearch());
 }
