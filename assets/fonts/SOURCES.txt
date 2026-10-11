@@ -1,0 +1,15 @@
+NotoSansSC.ttf
+https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf
+SHA256 a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da
+
+NotoSansSC-OFL.txt
+https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notosanssc/OFL.txt
+SHA256 1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9
+
+NotoEmoji.ttf
+https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notoemoji/NotoEmoji%5Bwght%5D.ttf
+SHA256 de6c18832938afc99caf132b39d6a30a19bac7f2e812e28db2535b4608d27551
+
+NotoEmoji-OFL.txt
+https://raw.githubusercontent.com/google/fonts/bd8f81ddb5c74d5c8897b36ad88b440266245103/ofl/notoemoji/OFL.txt
+SHA256 500bb1ccf43df7bbb522112f9133a52b16e1c35e809632f5d8609b179152de5b

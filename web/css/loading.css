@@ -1,0 +1,5 @@
+body { margin: 0; background: #111315; color: #F4F2E9; font-family: system-ui; }
+#loading { padding: 32px; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

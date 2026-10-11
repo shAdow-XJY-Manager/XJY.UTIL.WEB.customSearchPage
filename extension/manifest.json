@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "频率搜索 · 新标签页",
+  "short_name": "频率搜索",
+  "version": "1.2.0",
+  "description": "简洁的新标签页：系统字体、本地背景、三种搜索引擎与自由布局，数据仅保存在本机。",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "icons": {
+    "16": "icons/frequency-16.png",
+    "32": "icons/frequency-32.png",
+    "48": "icons/frequency-48.png",
+    "128": "icons/frequency-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'none'; connect-src 'self'; object-src 'none'; base-uri 'self';"
+  }
+}

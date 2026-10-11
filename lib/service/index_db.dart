@@ -1,26 +1,31 @@
-import 'dart:async';
 import 'package:sembast/sembast.dart';
 import 'package:sembast_web/sembast_web.dart';
 
 class IndexDB {
-  final String _dbName = 'shadow._db';
-  final String _storeName = 'search_records';
-  late final Database _db;
-  late final StoreRef _store;
+  IndexDB({String databaseName = 'shadow._db'}) : _dbName = databaseName;
+  final String _dbName;
+  Database? _db;
+  final _store = StoreRef<String, Object?>('search_records');
   final Map<String, Object?> _cacheDB = {};
 
   Future<void> init() async {
     _db = await databaseFactoryWeb.openDatabase(_dbName);
-    _store = stringMapStoreFactory.store(_storeName);
-    final List<Object?> keys = await _store.findKeys(_db);
-    for (var key in keys) {
-      _cacheDB[key as String] = await _store.record(key).get(_db);
-    }
+    final records = await _store.find(_db!);
+    _cacheDB
+      ..clear()
+      ..addEntries(records.map((r) => MapEntry(r.key, r.value)));
   }
 
-  Future<void> put(String key, Object? value) async {
-    _cacheDB[key] = value;
-    await _store.record(key).put(_db, value);
+  Future<void> put(String key, Object? value) => putAll({key: value});
+
+  Future<void> putAll(Map<String, Object?> values) async {
+    await _db!.transaction((transaction) async {
+      for (final entry in values.entries) {
+        await _store.record(entry.key).put(transaction, entry.value);
+      }
+    });
+    // Update the cache only after the complete transaction commits.
+    _cacheDB.addAll(values);
   }
 
   Object? get(String key) {
@@ -30,13 +35,22 @@ class IndexDB {
     return null;
   }
 
-  Future<void> delete(String key) async {
-    _cacheDB.remove(key);
-    await _store.record(key).delete(_db);
+  Future<void> delete(String key) => deleteKeys([key]);
+
+  Future<void> deleteKeys(Iterable<String> keys) async {
+    final removed = keys.toList();
+    await _db!.transaction((transaction) async {
+      for (final key in removed) {
+        await _store.record(key).delete(transaction);
+      }
+    });
+    removed.forEach(_cacheDB.remove);
   }
 
   Future<void> deleteAll() async {
+    await _store.delete(_db!);
     _cacheDB.clear();
-    await _store.delete(_db);
   }
+
+  Future<void> close() async => _db?.close();
 }

@@ -1,1 +1,20 @@
-<!doctype html><html lang="zh-CN"><head><base href="$FLUTTER_BASE_HREF"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#111315"><meta name="description" content="频率搜索：在 Bing、Google、百度之间切换，本地保存背景与偏好。"><title>频率搜索</title><link rel="icon" href="favicon.png"><link rel="manifest" href="manifest.json"><script src="js/frequency_search.js"></script><style>body{margin:0;background:#111315;color:#F4F2E9;font-family:system-ui}#loading{padding:32px}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}</style></head><body><div id="loading" role="status">正在打开搜索…</div><script>window.addEventListener("flutter-first-frame",()=>document.getElementById("loading")?.remove());</script><script src="flutter_bootstrap.js" async></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111315">
+  <meta name="description" content="频率搜索：在 Bing、Google、百度之间切换，本地保存背景与偏好。">
+  <title>频率搜索</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/loading.css">
+  <script src="js/frequency_search.js"></script>
+  <script src="js/loading.js" defer></script>
+</head>
+<body>
+  <div id="loading" role="status">正在打开搜索…</div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

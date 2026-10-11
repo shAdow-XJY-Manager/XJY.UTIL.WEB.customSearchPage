@@ -15,68 +15,159 @@ abstract final class FrequencyPalette {
 }
 
 abstract final class FrequencyTheme {
+  static const fontFamilyName = 'Noto Sans SC';
+  static const fontFallback = ['Noto Emoji'];
   static ThemeData dark({String? fontFamily}) {
     const p = FrequencyPalette.background;
-    final scheme = const ColorScheme.dark(
-      primary: FrequencyPalette.accent, onPrimary: p,
-      secondary: FrequencyPalette.amber, onSecondary: p,
-      surface: FrequencyPalette.surface, onSurface: FrequencyPalette.text,
-      error: FrequencyPalette.error, onError: p,
+    const scheme = ColorScheme.dark(
+      primary: FrequencyPalette.accent,
+      onPrimary: p,
+      secondary: FrequencyPalette.amber,
+      onSecondary: p,
+      surface: FrequencyPalette.surface,
+      onSurface: FrequencyPalette.text,
+      error: FrequencyPalette.error,
+      onError: p,
       outline: FrequencyPalette.border,
     );
     return ThemeData(
-      useMaterial3: true, fontFamily: fontFamily, visualDensity: VisualDensity.standard,
-      colorScheme: scheme, scaffoldBackgroundColor: p,
+      useMaterial3: true,
+      fontFamily: fontFamily ?? fontFamilyName,
+      fontFamilyFallback: fontFallback,
+      visualDensity: VisualDensity.standard,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: p,
       canvasColor: FrequencyPalette.surface,
       dividerColor: FrequencyPalette.border,
       textTheme: const TextTheme(
-        bodyLarge: TextStyle(fontSize: 16, height: 1.6, color: FrequencyPalette.text),
-        bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: FrequencyPalette.text),
-        labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(
+          fontFamily: fontFamilyName,
+          fontFamilyFallback: fontFallback,
+          fontSize: 16,
+          height: 1.6,
+          color: FrequencyPalette.text,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: fontFamilyName,
+          fontFamilyFallback: fontFallback,
+          fontSize: 14,
+          height: 1.5,
+          color: FrequencyPalette.text,
+        ),
+        labelLarge: TextStyle(
+          fontFamily: fontFamilyName,
+          fontFamilyFallback: fontFallback,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        filled: true, fillColor: FrequencyPalette.surface,
+        filled: true,
+        fillColor: FrequencyPalette.surface,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: FrequencyPalette.border)),
-        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: FrequencyPalette.accent, width: 2)),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: FrequencyPalette.border),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: FrequencyPalette.accent, width: 2),
+        ),
       ),
-      filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(
-        minimumSize: const Size(48, 48), foregroundColor: p,
-        backgroundColor: FrequencyPalette.accent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ).copyWith(side: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.focused)
-          ? const BorderSide(color: FrequencyPalette.text, width: 2) : BorderSide.none))),
-      outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(
-        minimumSize: const Size(48, 48), foregroundColor: FrequencyPalette.accent,
-        side: const BorderSide(color: FrequencyPalette.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ).copyWith(side: WidgetStateProperty.resolveWith((states) => BorderSide(
-        color: states.contains(WidgetState.focused) ? FrequencyPalette.accent : FrequencyPalette.border,
-        width: states.contains(WidgetState.focused) ? 2 : 1,
-      )))),
-      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(
-        minimumSize: const Size(48, 48), foregroundColor: FrequencyPalette.accent,
-      ).copyWith(side: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.focused)
-          ? const BorderSide(color: FrequencyPalette.accent, width: 2) : BorderSide.none))),
-      iconButtonTheme: IconButtonThemeData(style: IconButton.styleFrom(
-        minimumSize: const Size(48, 48), foregroundColor: FrequencyPalette.accent,
-      ).copyWith(side: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.focused)
-          ? const BorderSide(color: FrequencyPalette.accent, width: 2) : BorderSide.none))),
+      filledButtonTheme: FilledButtonThemeData(
+        style:
+            FilledButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              foregroundColor: p,
+              backgroundColor: FrequencyPalette.accent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ).copyWith(
+              side: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.focused)
+                    ? const BorderSide(color: FrequencyPalette.text, width: 2)
+                    : BorderSide.none,
+              ),
+            ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style:
+            OutlinedButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              foregroundColor: FrequencyPalette.accent,
+              side: const BorderSide(color: FrequencyPalette.border),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ).copyWith(
+              side: WidgetStateProperty.resolveWith(
+                (states) => BorderSide(
+                  color: states.contains(WidgetState.focused)
+                      ? FrequencyPalette.accent
+                      : FrequencyPalette.border,
+                  width: states.contains(WidgetState.focused) ? 2 : 1,
+                ),
+              ),
+            ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style:
+            TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              foregroundColor: FrequencyPalette.accent,
+            ).copyWith(
+              side: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.focused)
+                    ? const BorderSide(color: FrequencyPalette.accent, width: 2)
+                    : BorderSide.none,
+              ),
+            ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style:
+            IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              foregroundColor: FrequencyPalette.accent,
+            ).copyWith(
+              side: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.focused)
+                    ? const BorderSide(color: FrequencyPalette.accent, width: 2)
+                    : BorderSide.none,
+              ),
+            ),
+      ),
       chipTheme: ChipThemeData(
-        labelStyle: const TextStyle(color: FrequencyPalette.text, fontSize: 14, height: 1.5, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(
+          fontFamily: fontFamilyName,
+          fontFamilyFallback: fontFallback,
+          color: FrequencyPalette.text,
+          fontSize: 14,
+          height: 1.5,
+          fontWeight: FontWeight.w600,
+        ),
         checkmarkColor: FrequencyPalette.accent,
         selectedColor: FrequencyPalette.selected,
-        side: WidgetStateBorderSide.resolveWith((states) => BorderSide(
-          color: states.contains(WidgetState.focused) ? FrequencyPalette.accent : FrequencyPalette.border,
-          width: states.contains(WidgetState.focused) ? 2 : 1,
-        )),
+        side: WidgetStateBorderSide.resolveWith(
+          (states) => BorderSide(
+            color: states.contains(WidgetState.focused)
+                ? FrequencyPalette.accent
+                : FrequencyPalette.border,
+            width: states.contains(WidgetState.focused) ? 2 : 1,
+          ),
+        ),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: p, foregroundColor: FrequencyPalette.text, elevation: 0,
+        backgroundColor: p,
+        foregroundColor: FrequencyPalette.text,
+        elevation: 0,
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: FrequencyPalette.elevated,
-        contentTextStyle: TextStyle(color: FrequencyPalette.text, fontSize: 14),
+        contentTextStyle: TextStyle(
+          fontFamily: fontFamilyName,
+          fontFamilyFallback: fontFallback,
+          color: FrequencyPalette.text,
+          fontSize: 14,
+        ),
       ),
     );
   }

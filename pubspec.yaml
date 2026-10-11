@@ -2,7 +2,7 @@ name: custom_search_page
 description: A web Flutter project, for import different search engine
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ">=3.9.2 <4.0.0"
@@ -32,14 +32,10 @@ flutter:
   assets:
     - assets/icon/
     - assets/img/
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+  fonts:
+    - family: Noto Sans SC
+      fonts:
+        - asset: assets/fonts/NotoSansSC.ttf
+    - family: Noto Emoji
+      fonts:
+        - asset: assets/fonts/NotoEmoji.ttf
