@@ -17,8 +17,14 @@ const passed = name => { checks.push(name); console.log('PASS',kind,name); };
 async function launch() {
   const file = path.join(profile,'DevToolsActivePort'); fs.rmSync(file,{force:true});
   child = spawn(executable,['--headless=new','--remote-debugging-port=0','--enable-unsafe-extension-debugging','--no-first-run','--no-default-browser-check',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore'});
-  for(let n=0;!fs.existsSync(file)&&n<150;n++)await wait(100);
-  browser = await pw.chromium.connectOverCDP('http://127.0.0.1:'+fs.readFileSync(file,'utf8').split('\n')[0]);
+  let port;
+  for(let n=0;n<150;n++){
+    if(fs.existsSync(file))port=fs.readFileSync(file,'utf8').split('\n')[0];
+    if(/^\d+$/.test(port||''))break;
+    await wait(100);
+  }
+  assert(/^\d+$/.test(port||''),'browser must finish writing its debugging port');
+  browser = await pw.chromium.connectOverCDP('http://127.0.0.1:'+port);
   context = browser.contexts()[0]; context.setDefaultTimeout(10000);
   await context.addInitScript(()=>Object.defineProperty(navigator,'languages',{configurable:true,get:()=>['zh-CN']}));
   const cdp = await browser.newBrowserCDPSession();
