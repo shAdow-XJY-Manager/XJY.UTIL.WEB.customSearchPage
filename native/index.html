@@ -4,63 +4,104 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="简洁的新标签页，本地背景与自由布局。">
-  <title>新标签页</title>
+  <meta name="description" content="简洁的新标签页，本地背景与自由布局。" data-i18n-content="简洁的新标签页，本地背景与自由布局。">
+  <title data-i18n="新标签页">新标签页</title>
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./app.js"></script>
 </head>
 <body>
   <span id="font-probe" aria-hidden="true"></span>
+  <canvas id="ambient" aria-hidden="true" hidden></canvas>
   <img id="background" alt="" hidden>
   <div id="shade" hidden></div>
   <main id="scene">
-    <div id="search-shell" role="group" aria-label="搜索框布局" tabindex="-1">
+    <div id="search-shell" role="group" aria-label="搜索框布局" tabindex="-1" data-i18n-aria-label="搜索框布局">
       <form id="search-form" role="search" autocomplete="off">
-        <button id="engine-button" class="icon-button engine-button" type="button" aria-label="切换搜索引擎" aria-haspopup="menu" aria-expanded="false" aria-controls="engine-menu" disabled>
+        <button id="engine-button" class="icon-button engine-button" type="button" aria-label="切换搜索引擎" aria-haspopup="dialog" aria-expanded="false" aria-controls="engine-menu" disabled data-i18n-aria-label="切换搜索引擎">
           <img id="engine-icon" alt="" width="22" height="22">
           <span class="icon icon-chevron" aria-hidden="true"></span>
         </button>
-        <input id="query" type="search" name="q" placeholder="搜索" aria-label="搜索" spellcheck="false" disabled>
-        <button id="submit" class="icon-button submit" type="submit" aria-label="搜索" disabled><span class="icon icon-search" aria-hidden="true"></span></button>
+        <input id="query" dir="auto" data-auto-dir type="search" name="q" placeholder="搜索" aria-label="搜索" spellcheck="false" disabled data-i18n-placeholder="搜索" data-i18n-aria-label="搜索">
+        <button id="submit" class="icon-button submit" type="submit" aria-label="搜索" disabled data-i18n-aria-label="搜索"><span class="icon icon-search" aria-hidden="true"></span></button>
       </form>
       <div id="resize-handles" hidden>
-        <button class="resize-handle nw" data-edge="nw" aria-label="调整左上角" type="button"></button>
-        <button class="resize-handle n" data-edge="n" aria-label="调整上边缘" type="button"></button>
-        <button class="resize-handle ne" data-edge="ne" aria-label="调整右上角" type="button"></button>
-        <button class="resize-handle e" data-edge="e" aria-label="调整右边缘" type="button"></button>
-        <button class="resize-handle se" data-edge="se" aria-label="调整右下角" type="button"></button>
-        <button class="resize-handle s" data-edge="s" aria-label="调整下边缘" type="button"></button>
-        <button class="resize-handle sw" data-edge="sw" aria-label="调整左下角" type="button"></button>
-        <button class="resize-handle w" data-edge="w" aria-label="调整左边缘" type="button"></button>
+        <button class="resize-handle nw" data-edge="nw" aria-label="调整左上角" type="button" data-i18n-aria-label="调整左上角"></button>
+        <button class="resize-handle n" data-edge="n" aria-label="调整上边缘" type="button" data-i18n-aria-label="调整上边缘"></button>
+        <button class="resize-handle ne" data-edge="ne" aria-label="调整右上角" type="button" data-i18n-aria-label="调整右上角"></button>
+        <button class="resize-handle e" data-edge="e" aria-label="调整右边缘" type="button" data-i18n-aria-label="调整右边缘"></button>
+        <button class="resize-handle se" data-edge="se" aria-label="调整右下角" type="button" data-i18n-aria-label="调整右下角"></button>
+        <button class="resize-handle s" data-edge="s" aria-label="调整下边缘" type="button" data-i18n-aria-label="调整下边缘"></button>
+        <button class="resize-handle sw" data-edge="sw" aria-label="调整左下角" type="button" data-i18n-aria-label="调整左下角"></button>
+        <button class="resize-handle w" data-edge="w" aria-label="调整左边缘" type="button" data-i18n-aria-label="调整左边缘"></button>
       </div>
     </div>
+    <nav id="shortcuts" aria-label="快捷链接" hidden data-i18n-aria-label="快捷链接"></nav>
   </main>
-  <div id="engine-menu" class="engine-menu" role="menu" aria-label="搜索引擎" hidden></div>
-  <button id="settings-button" class="icon-button settings-button" type="button" aria-label="设置" aria-haspopup="dialog" aria-controls="settings" aria-expanded="false"><span class="icon icon-settings" aria-hidden="true"></span></button>
+  <div id="engine-menu" class="engine-menu" role="dialog" aria-label="搜索引擎" hidden data-i18n-aria-label="搜索引擎">
+    <input id="engine-filter" dir="auto" data-auto-dir type="search" placeholder="查找搜索引擎" aria-label="查找搜索引擎" autocomplete="off" data-i18n-placeholder="查找搜索引擎" data-i18n-aria-label="查找搜索引擎">
+    <div id="engine-options" role="menu" aria-label="选择搜索引擎" data-i18n-aria-label="选择搜索引擎"></div>
+    <p id="engine-empty" class="hint" hidden data-i18n="未找到搜索引擎">未找到搜索引擎</p>
+  </div>
+  <button id="settings-button" class="icon-button settings-button" type="button" aria-label="设置" title="设置" aria-haspopup="dialog" aria-controls="settings" aria-expanded="false" data-i18n-aria-label="设置" data-i18n-title="设置"><span class="icon icon-settings" aria-hidden="true"></span></button>
   <div id="drawer-backdrop" hidden></div>
   <aside id="settings" class="drawer" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
-    <header><h1 id="settings-title">设置</h1><button id="close-settings" class="icon-button" type="button" aria-label="关闭设置"><span class="icon icon-close" aria-hidden="true"></span></button></header>
+    <header class="drawer-header"><h1 id="settings-title" data-i18n="设置">设置</h1><label class="language-switch" title="界面语言" data-i18n-title="界面语言"><span class="icon icon-globe" aria-hidden="true"></span><select id="language" aria-label="界面语言" data-i18n-aria-label="界面语言"><option value="auto" data-i18n="跟随浏览器">跟随浏览器</option></select></label><button id="close-settings" class="icon-button" type="button" aria-label="关闭设置" data-i18n-aria-label="关闭设置"><span class="icon icon-close" aria-hidden="true"></span></button></header>
+    <nav class="settings-tabs" role="tablist" aria-label="设置分类" data-i18n-aria-label="设置分类">
+      <button id="tab-appearance" type="button" role="tab" aria-controls="panel-appearance" aria-selected="true" data-i18n="外观">外观</button>
+      <button id="tab-search" type="button" role="tab" aria-controls="panel-search" aria-selected="false" tabindex="-1" data-i18n="搜索">搜索</button>
+      <button id="tab-shortcuts" type="button" role="tab" aria-controls="panel-shortcuts" aria-selected="false" tabindex="-1" data-i18n="快捷链接">快捷链接</button>
+    </nav>
     <div class="drawer-content">
-      <section><h2>搜索</h2><label class="row" for="new-tab"><span>在新标签打开结果</span><input id="new-tab" type="checkbox" role="switch"></label></section>
-      <section><h2>背景</h2>
-        <div class="actions"><button id="choose-background" type="button">选择本地图片</button><button id="clear-background" class="quiet" type="button">恢复纯色</button></div>
-        <input id="background-file" type="file" accept="image/*" hidden>
-        <p class="hint">最大 32 MB、1600 万像素。自动缩小至 1920 px 并压缩为 JPEG；压缩后最大 2 MB，仅保存在本机。</p>
-        <label class="row" for="background-fit"><span>图片适配</span><select id="background-fit"><option value="0">原始大小</option><option value="1">拉伸</option><option value="2">缩小</option><option value="3">覆盖</option><option value="4">包含</option><option value="5">适应宽度</option><option value="6">适应高度</option></select></label>
-        <label class="row" for="overlay"><span>背景遮罩</span><output id="overlay-value" for="overlay">0%</output></label><input id="overlay" type="range" min="0" max="100" step="1" aria-label="背景遮罩">
-      </section>
-      <section><h2>外观</h2><label class="row" for="theme"><span>主题</span><select id="theme"><option value="auto">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></label>
-        <details id="advanced-colors"><summary>自定义颜色</summary><label class="row" for="custom-color"><span>启用</span><input id="custom-color" type="checkbox" role="switch"></label><div id="color-fields"></div></details>
-      </section>
-      <section><h2>布局</h2><button id="edit-layout" type="button">编辑布局</button><p class="hint">自由拖动搜索框，拉伸边缘或四角调整大小。</p></section>
-      <section class="reset-section"><button id="reset-all" class="quiet" type="button">恢复全部默认设置</button></section>
-      <p id="settings-status" class="status" role="status" aria-live="polite"></p>
+      <div id="panel-appearance" class="settings-panel" role="tabpanel" aria-labelledby="tab-appearance">
+        <section class="background-section"><h2 data-i18n="背景图片">背景图片</h2>
+          <figure class="background-card">
+            <div class="background-preview-frame"><img id="background-preview" alt="当前背景预览" hidden data-i18n-alt="当前背景预览"><div id="background-placeholder"><span class="icon icon-image" aria-hidden="true"></span><span data-i18n="纯色背景">纯色背景</span></div></div>
+            <figcaption><span id="background-name" data-i18n="纯色背景">纯色背景</span><span id="background-meta" data-i18n="跟随当前主题">跟随当前主题</span></figcaption>
+          </figure>
+          <div class="background-actions"><button id="choose-background" class="primary" type="button" data-i18n="选择图片">选择图片</button><button id="clear-background" class="quiet" type="button" data-i18n="恢复纯色">恢复纯色</button></div>
+          <input id="background-file" type="file" accept="image/*" hidden>
+          <p class="hint original-hint" data-i18n="新选择的图片按原图保存在本机。">新选择的图片按原图保存在本机。</p>
+          <div class="control-group">
+            <label class="row" for="background-fit"><span data-i18n="图片适配">图片适配</span><select id="background-fit"><option value="0" data-i18n="原始大小">原始大小</option><option value="1" data-i18n="拉伸">拉伸</option><option value="2" data-i18n="缩小">缩小</option><option value="3" data-i18n="覆盖">覆盖</option><option value="4" data-i18n="包含">包含</option><option value="5" data-i18n="适应宽度">适应宽度</option><option value="6" data-i18n="适应高度">适应高度</option></select></label>
+            <div class="slider-setting"><label class="row" for="overlay"><span data-i18n="背景遮罩">背景遮罩</span><output id="overlay-value" for="overlay">0%</output></label><input id="overlay" type="range" min="0" max="100" step="1" aria-label="背景遮罩" data-i18n-aria-label="背景遮罩"></div>
+          </div>
+        </section>
+        <section><h2 data-i18n="主题">主题</h2><div class="control-group">
+
+          <label class="row" for="theme"><span data-i18n="主题">主题</span><select id="theme"><option value="auto" data-i18n="跟随系统">跟随系统</option><option value="light" data-i18n="浅色">浅色</option><option value="dark" data-i18n="深色">深色</option></select></label>
+          <label class="row" for="image-theme"><span data-i18n="匹配图片底色">匹配图片底色</span><input id="image-theme" type="checkbox" role="switch"></label>
+        </div>
+          <details id="advanced-colors" class="settings-disclosure"><summary data-i18n="自定义颜色">自定义颜色</summary><label class="row" for="custom-color"><span data-i18n="启用自定义颜色">启用自定义颜色</span><input id="custom-color" type="checkbox" role="switch"></label><div id="color-fields"></div><p class="hint" data-i18n="自定义页面颜色优先于图片取色。">自定义页面颜色优先于图片取色。</p></details>
+        </section>
+        <section><h2 data-i18n="搜索框布局">搜索框布局</h2><button id="edit-layout" class="wide-button" type="button"><span class="icon icon-grid" aria-hidden="true"></span><span data-i18n="编辑布局">编辑布局</span></button><p class="hint" data-i18n="拖动移动，拉伸边缘调整大小。">拖动移动，拉伸边缘调整大小。</p></section>
+      </div>
+      <div id="panel-search" class="settings-panel" role="tabpanel" aria-labelledby="tab-search" hidden>
+        <section><h2 data-i18n="搜索方式">搜索方式</h2><div class="control-group"><label class="row" for="new-tab"><span data-i18n="在新标签打开结果">在新标签打开结果</span><input id="new-tab" type="checkbox" role="switch"></label></div></section>
+        <section><h2 data-i18n="搜索引擎">搜索引擎</h2><p class="hint" data-i18n="点击搜索框左侧图标，切换内置或自定义引擎。">点击搜索框左侧图标，切换内置或自定义引擎。</p><details class="settings-disclosure"><summary data-i18n="自定义搜索引擎">自定义搜索引擎</summary><div id="custom-engines"></div><button id="add-engine" class="wide-button" type="button" data-i18n="添加搜索引擎">添加搜索引擎</button></details></section>
+      </div>
+      <div id="panel-shortcuts" class="settings-panel" role="tabpanel" aria-labelledby="tab-shortcuts" hidden>
+        <section><h2 data-i18n="快捷链接">快捷链接</h2><div class="control-group"><label class="row" for="show-shortcuts"><span data-i18n="显示快捷链接">显示快捷链接</span><input id="show-shortcuts" type="checkbox" role="switch"></label><label class="row" for="show-add-shortcut"><span data-i18n="显示添加按钮">显示添加按钮</span><input id="show-add-shortcut" type="checkbox" role="switch"></label></div><button id="add-shortcut-settings" class="wide-button" type="button" data-i18n="添加快捷链接">添加快捷链接</button><p class="hint" data-i18n="悬停或右键链接可编辑；拖动调整顺序。">悬停或右键链接可编辑；拖动调整顺序。</p></section>
+        <section><h2 data-i18n="浏览器常用网站">浏览器常用网站</h2><button id="import-sites" class="wide-button" type="button" data-i18n="导入浏览器常用网站">导入浏览器常用网站</button><details class="settings-disclosure help-details"><summary data-i18n="关于一次性导入">关于一次性导入</summary><p id="import-hint" class="hint" data-i18n="仅导入一次，不包含手动固定的原生链接；之后在本页独立管理。">仅导入一次，不包含手动固定的原生链接；之后在本页独立管理。</p></details></section>
+      </div>
     </div>
+    <p id="settings-status" class="status drawer-status" role="status" aria-live="polite"></p>
+    <footer class="drawer-footer"><button id="reset-all" type="button" aria-label="恢复全部默认设置" data-i18n-aria-label="恢复全部默认设置" data-i18n="重置">重置</button><a id="repository-link" href="https://github.com/shAdow-XJY-Manager/XJY.UTIL.WEB.customSearchPage" target="_blank" rel="noopener noreferrer" aria-label="查看 GitHub 仓库（在新标签页打开）" class="icon-button" title="GitHub" data-i18n-aria-label="查看 GitHub 仓库（在新标签页打开）"><span class="icon icon-github" aria-hidden="true"></span></a></footer>
   </aside>
-  <div id="edit-toolbar" class="edit-toolbar" role="toolbar" aria-label="布局编辑" hidden>
-    <button id="reset-layout" class="quiet" type="button">重置</button><button id="cancel-layout" class="quiet" type="button">取消</button><button id="save-layout" class="primary" type="button">完成</button>
+  <dialog id="item-dialog" aria-labelledby="item-title">
+    <form id="item-form" novalidate>
+      <header><h1 id="item-title" data-i18n="添加快捷链接">添加快捷链接</h1><button id="close-item" class="icon-button" type="button" aria-label="关闭编辑" data-i18n-aria-label="关闭编辑"><span class="icon icon-close" aria-hidden="true"></span></button></header>
+      <label for="item-name" data-i18n="名称">名称</label><input id="item-name" dir="auto" data-auto-dir type="text" maxlength="60" autocomplete="off">
+      <label id="item-url-label" for="item-url" data-i18n="网址">网址</label><input id="item-url" dir="ltr" type="text" inputmode="url" maxlength="2048" required autocomplete="off" spellcheck="false">
+      <p id="item-hint" class="hint"></p>
+      <p id="item-status" class="status" role="status" aria-live="polite"></p>
+      <div class="actions item-order" id="item-order" hidden><button id="move-earlier" type="button" data-i18n="向前移">向前移</button><button id="move-later" type="button" data-i18n="向后移">向后移</button></div>
+      <div class="actions item-actions"><button id="delete-item" class="quiet" type="button" hidden data-i18n="删除">删除</button><button id="cancel-item" class="quiet" type="button" data-i18n="取消">取消</button><button id="save-item" class="primary" type="submit" data-i18n="保存">保存</button></div>
+    </form>
+  </dialog>
+  <div id="edit-toolbar" class="edit-toolbar" role="toolbar" aria-label="布局编辑" hidden data-i18n-aria-label="布局编辑">
+    <button id="reset-layout" class="quiet" type="button" data-i18n="重置">重置</button><button id="cancel-layout" class="quiet" type="button" data-i18n="取消">取消</button><button id="save-layout" class="primary" type="button" data-i18n="完成">完成</button>
     <span id="edit-status" class="status" role="status" aria-live="polite"></span>
   </div>
-  <p id="edit-hint" class="edit-hint" hidden>拖动移动，拉伸边角。方向键微调，Shift 加速，Esc 取消。</p>
+  <p id="edit-hint" class="edit-hint" hidden data-i18n="拖动移动，拉伸边角。方向键微调，Shift 加速，Esc 取消。">拖动移动，拉伸边角。方向键微调，Shift 加速，Esc 取消。</p>
 </body>
 </html>

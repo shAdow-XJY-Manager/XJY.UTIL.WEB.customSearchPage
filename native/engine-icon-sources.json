@@ -1,0 +1,122 @@
+{
+  "duckduckgo": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/duckduckgo.svg",
+    "color": "DE5833",
+    "source": "https://github.com/duckduckgo/duckduckgo-privacy-extension/blob/5c6ac8d6a07421adbfb97ee2ff855dd7655f8d71/shared/img/logo-small-grayscale.svg"
+  },
+  "brave": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/brave.svg",
+    "color": "FB542B",
+    "source": "https://brave.com/brave-branding-assets"
+  },
+  "startpage": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/startpage.svg",
+    "color": "6563FF",
+    "source": "https://startpage.com/en/about-us"
+  },
+  "qwant": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/qwant.svg",
+    "color": "282B2F",
+    "source": "https://about.qwant.com"
+  },
+  "ecosia": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/ecosia.svg",
+    "color": "008009",
+    "source": "https://www.ecosia.org/imprint"
+  },
+  "sogou": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/sogou.svg",
+    "color": "FB6022",
+    "source": "https://www.sogou.com"
+  },
+  "naver": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/naver.svg",
+    "color": "03C75A",
+    "source": "https://developers.naver.com/docs/login/bi/bi.md"
+  },
+  "mojeek": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/mojeek.svg",
+    "color": "7AB93C",
+    "source": "https://www.mojeek.com/logos"
+  },
+  "swisscows": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/swisscows.svg",
+    "color": "000000",
+    "source": "https://blog.swisscows.com"
+  },
+  "kagi": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/kagi.svg",
+    "color": "FFB319",
+    "source": "https://kagi.com"
+  },
+  "perplexity": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/perplexity.svg",
+    "color": "1FB8CD",
+    "source": "https://www.perplexity.ai"
+  },
+  "wikipedia-zh": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/wikipedia.svg",
+    "color": "000000",
+    "source": "https://commons.wikimedia.org/wiki/File:Wikipedia-logo-v2.svg"
+  },
+  "wikipedia-en": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/wikipedia.svg",
+    "color": "000000",
+    "source": "https://commons.wikimedia.org/wiki/File:Wikipedia-logo-v2.svg"
+  },
+  "github": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/github.svg",
+    "color": "181717",
+    "source": "https://github.com/logos"
+  },
+  "stackoverflow": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/stackoverflow.svg",
+    "color": "F58025",
+    "source": "https://stackoverflow.design/brand/logo/"
+  },
+  "mdn": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/mdnwebdocs.svg",
+    "color": "000000",
+    "source": "https://github.com/mdn/yari/blob/77e6cda02f7013219e9da27a00b9424085e60fdb/client/src/assets/mdn-logo.svg"
+  },
+  "scholar": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/googlescholar.svg",
+    "color": "4285F4",
+    "source": "https://commons.wikimedia.org/wiki/File:Google_Scholar_logo.svg"
+  },
+  "pubmed": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/pubmed.svg",
+    "color": "326599",
+    "source": "https://pubmed.ncbi.nlm.nih.gov"
+  },
+  "arxiv": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/arxiv.svg",
+    "color": "B31B1B",
+    "source": "https://arxiv.org"
+  },
+  "youtube": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/youtube.svg",
+    "color": "FF0000",
+    "source": "https://www.youtube.com/howyoutubeworks/resources/brand-resources/#logos-icons-and-colors"
+  },
+  "bilibili": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/bilibili.svg",
+    "color": "00A1D6",
+    "source": "https://www.bilibili.com"
+  },
+  "zhihu": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/zhihu.svg",
+    "color": "0084FF",
+    "source": "https://www.zhihu.com"
+  },
+  "douban": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/douban.svg",
+    "color": "2D963D",
+    "source": "https://www.douban.com/about"
+  },
+  "ebay": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@16.33.0/icons/ebay.svg",
+    "color": "E53238",
+    "source": "https://go.developer.ebay.com/logos"
+  }
+}

@@ -18,7 +18,8 @@ export function checkSize(directory, zip) {
   if (zipped > 200 * 1024) throw new Error(`ZIP exceeds 200 KiB: ${zipped} bytes`);
   const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
   if (manifest.manifest_version !== 3 || manifest.chrome_url_overrides?.newtab !== 'index.html' ||
-      manifest.permissions?.length || manifest.host_permissions?.length || /unsafe-eval|wasm/.test(manifest.content_security_policy.extension_pages)) {
+      JSON.stringify(manifest.permissions) !== '["favicon"]' || JSON.stringify(manifest.optional_permissions) !== '["topSites"]' ||
+      manifest.host_permissions?.length || manifest.optional_host_permissions?.length || /unsafe-eval|wasm/.test(manifest.content_security_policy.extension_pages)) {
     throw new Error('Unexpected extension capabilities');
   }
   console.log(`Extension ${(bytes / 1024).toFixed(1)} KiB; ZIP ${(zipped / 1024).toFixed(1)} KiB (${entries.length} files)`);

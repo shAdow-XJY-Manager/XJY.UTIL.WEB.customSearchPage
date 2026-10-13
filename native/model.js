@@ -1,8 +1,6 @@
-export const engines = [
-  { name: 'Bing', host: 'www.bing.com', path: '/search', parameter: 'q' },
-  { name: 'Google', host: 'www.google.com', path: '/search', parameter: 'q' },
-  { name: '百度', host: 'www.baidu.com', path: '/s', parameter: 'wd' },
-];
+import { languageCodes } from './i18n.js';
+import { engineById, normalizeEngines } from './engines.js';
+export { engines, searchUrl } from './engines.js';
 export const defaultLayout = Object.freeze({ cx: 0.5, cy: 0.42, width: 600, height: 56 });
 export const colorKeys = ['page', 'settings', 'submit', 'text', 'border', 'field'];
 const oldColors = ['page_back_color_value', 'setting_btn_color_value', 'search_btn_color_value',
@@ -10,7 +8,7 @@ const oldColors = ['page_back_color_value', 'setting_btn_color_value', 'search_b
 export const defaultColors = Object.freeze({ page: 0xfff8f9fa, settings: 0xff5f6368,
   submit: 0xff5f6368, text: 0xff202124, border: 0xffdadce0, field: 0xffffffff });
 export function defaults(extension = false) {
-  return { engine: 0, newTab: !extension, theme: 'auto', fit: 3, overlay: 0,
+  return { engine: 'bing', customEngines: [], showShortcuts: true, showAddShortcut: true, newTab: !extension, theme: 'auto', language: 'auto', imageTheme: true, fit: 3, overlay: 0,
     customColor: false, colors: { ...defaultColors }, layout: { ...defaultLayout } };
 }
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -18,9 +16,14 @@ const option = (value, count, fallback) => Number.isInteger(value) && value >= 0
 export function normalizePrefs(raw, extension = false) {
   const p = defaults(extension);
   if (!raw || typeof raw !== 'object') return p;
-  p.engine = option(raw.engine, engines.length, p.engine);
+  p.customEngines = normalizeEngines(raw.customEngines);
+  p.engine = engineById(raw.engine, p.customEngines)?.id || p.engine;
+  if (typeof raw.showAddShortcut === 'boolean') p.showAddShortcut = raw.showAddShortcut;
+  if (typeof raw.showShortcuts === 'boolean') p.showShortcuts = raw.showShortcuts;
   if (typeof raw.newTab === 'boolean') p.newTab = raw.newTab;
   if (['auto', 'light', 'dark'].includes(raw.theme)) p.theme = raw.theme;
+  if (raw.language === 'auto' || languageCodes.includes(raw.language)) p.language = raw.language;
+  if (typeof raw.imageTheme === 'boolean') p.imageTheme = raw.imageTheme;
   p.fit = option(raw.fit, 7, p.fit);
   if (finite(raw.overlay) && raw.overlay >= 0 && raw.overlay <= 1) p.overlay = raw.overlay;
   p.customColor = raw.customColor === true;
@@ -50,14 +53,6 @@ export function migratePrefs(legacy, extension = false) {
   if (Number.isInteger(width) && width >= 0 && width < 3) layout.width = [500, 800, 1000][width];
   raw.layout = layout;
   return normalizePrefs(raw, extension);
-}
-export function searchUrl(engine, query) {
-  if (!query.trim()) throw new Error('请输入搜索内容。');
-  if (!engines[engine]) throw new Error('请选择有效搜索引擎。');
-  const { host, path, parameter } = engines[engine];
-  const url = new URL(`https://${host}${path}`);
-  url.searchParams.set(parameter, query.trim());
-  return url.href;
 }
 export function argbCss(value) {
   const hex = value.toString(16).padStart(8, '0');

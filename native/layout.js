@@ -13,6 +13,22 @@ export function layoutRect(layout, view, fontSize = 16) {
   return { x: clamp(layout.cx * view.width - width / 2, b.margin, view.width - b.margin - width),
     y: clamp(layout.cy * view.height - height / 2, b.margin, view.height - b.margin - height), width, height };
 }
+export function sceneRects(layout, view, fontSize = 16, count = 0) {
+  const search = layoutRect(layout, view, fontSize);
+  if (!count) return { search, links: null, searchView: view };
+  const b = bounds(view, fontSize), gap = 24;
+  const cellWidth = Math.max(96, fontSize * 6);
+  const width = Math.min(600, b.maxWidth, count * cellWidth);
+  const columns = Math.max(1, Math.floor(width / cellWidth));
+  const tile = Math.max(96, fontSize * 6);
+  const height = Math.max(0, Math.min(Math.ceil(count / columns) * tile, tile * 3, view.height * .45, view.height - b.margin * 2 - b.minHeight - gap));
+  if (!height) return { search, links: null, searchView: view };
+  const searchView = { ...view, height: Math.max(b.margin * 2 + b.minHeight, view.height - height - gap) };
+  search.height = Math.min(search.height, bounds(searchView, fontSize).maxHeight);
+  search.y = clamp(search.y, b.margin, searchView.height - b.margin - search.height);
+  return { search, searchView, links: { x: clamp(search.x + search.width / 2 - width / 2, b.margin, view.width - b.margin - width),
+    y: search.y + search.height + gap, width, height, columns, tile } };
+}
 export function rectLayout(rect, view) {
   return { cx: (rect.x + rect.width / 2) / view.width, cy: (rect.y + rect.height / 2) / view.height,
     width: rect.width, height: rect.height };

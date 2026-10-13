@@ -1,3 +1,18 @@
 Fluent UI System Icons (MIT)
 https://github.com/microsoft/fluentui-system-icons/tree/a347af95478f989038cccbf085978865264c048a
 Engine and extension PNG icons reused from this project.
+
+Search engine marks: Simple Icons 16.33.0 (CC0; brand trademarks remain their owners).
+https://github.com/simple-icons/simple-icons
+Individual upstream sources: native/engine-icon-sources.json in repository.
+Yahoo: Font Awesome Free 6.7.2 brand SVG, CC BY 4.0, Fonticons, Inc.
+https://fontawesome.com/license/free
+https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/svgs/brands/yahoo.svg
+Official site favicon snapshots (32px), used only to identify the search provider:
+Yahoo Japan https://www.yahoo.co.jp/favicon.ico
+Yandex https://yandex.com/favicon.ico
+360 https://www.so.com/favicon.ico
+Daum https://t1.daumcdn.net/top/favicon.ico
+Seznam https://www.seznam.cz/favicon.ico
+Coc Coc https://coccoc.com/favicon.ico
+Amazon https://www.amazon.com/favicon.ico

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { build } from 'vite';
 import { root, checkSize } from './check-size.mjs';
+import { languages, translate } from '../native/i18n.js';
 const args = process.argv.slice(2);
 const target = args.find(arg => !arg.startsWith('--')) || 'all';
 const base = args.find(arg => arg.startsWith('--base-href='))?.slice(12) || '/XJY.UTIL.WEB.customSearchPage/';
@@ -30,6 +31,19 @@ for (const extension of [false, true]) {
   }
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'extension/manifest.json'), 'utf8'));
   manifest.version = version;
+  manifest.name = '__MSG_extensionName__'; manifest.short_name = '__MSG_extensionShortName__';
+  manifest.description = '__MSG_extensionDescription__'; manifest.default_locale = 'en';
+  for (const [locale] of languages) {
+    const codes = locale === 'pt' ? ['pt_BR', 'pt_PT'] : [locale.replace('-', '_')];
+    const brand = locale === 'zh-CN' ? '频率搜索' : locale === 'zh-TW' ? '頻率搜尋' : 'Frequency Search';
+    const messages = { extensionName: { message: `${brand} · ${translate('新标签页', locale)}` },
+      extensionShortName: { message: locale.startsWith('zh') ? brand : 'Frequency' },
+      extensionDescription: { message: translate('简洁的新标签页，本地背景与自由布局。', locale) } };
+    for (const code of codes) {
+      const localeDir = path.join(output, '_locales', code); fs.mkdirSync(localeDir, { recursive: true });
+      fs.writeFileSync(path.join(localeDir, 'messages.json'), JSON.stringify(messages));
+    }
+  }
   fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify(manifest, null, 2));
   fs.cpSync(path.join(root, 'extension/icons'), path.join(output, 'icons'), { recursive: true });
   const html = fs.readFileSync(path.join(output, 'index.html'), 'utf8');

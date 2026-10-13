@@ -27,7 +27,7 @@ test('all nine old alignments and width presets become freely editable geometry'
     const p = migratePrefs({ search_bar_align_option: align, search_bar_length_option: align % 3,
       engine_option: 2, is_jump_to_new_page: false, lock_or_custom_color: true, search_bar_text_color_value: 0xff112233 });
     assert.equal(p.layout.cx, (align % 3) / 2); assert.equal(p.layout.cy, Math.floor(align / 3) / 2);
-    assert.equal(p.layout.width, [500, 800, 1000][align % 3]); assert.equal(p.engine, 2);
+    assert.equal(p.layout.width, [500, 800, 1000][align % 3]); assert.equal(p.engine, 'baidu');
     assert.equal(p.newTab, false); assert.equal(p.customColor, true); assert.equal(p.colors.text, 0xff112233);
   }
   assert.equal(migratePrefs({ is_custom_back_img: true }).overlay, 0.45);
