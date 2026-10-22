@@ -28,7 +28,7 @@ npm run build -- web --base-href=/
 - 当前版本压缩包约 165 KiB，解压资源约 315 KiB；开发工具和旧 Flutter 源码均不进入交付包。
 - 已有 Dart 环境仍可使用 `dart run tool/build.dart [all|web|extension] [--base-href=/path/]`，该入口转交 Node 构建。
 
-`native/` 是当前运行实现，`lib/`、旧 `web/` 和 Dart 测试保留作历史参考。生产构建不使用 Flutter SDK。现有 Pages 发布可将网站产物复制到 `docs/`，保留 `.nojekyll`；本轮不会自动覆盖或发布 `docs/`。
+`native/` 是当前运行实现，`lib/`、旧 `web/` 和 Dart 测试保留作历史参考。生产构建不使用 Flutter SDK。现有 Pages 发布使用 `npm run build -- web` 生成的 **原生 `build/web/`**，再更新 `docs/` 并保留 `.nojekyll`。不要使用 `flutter build web` 更新本项目的部署目录。默认外观沿用浅色／深色与自由布局；Frequency 深色配色、清晰焦点和设置分组不会重置用户保存的主题、背景或位置。
 
 ## 安装与更新扩展
 

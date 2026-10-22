@@ -1,1 +1,0 @@
-mock version str,true version str generated in /docs/version.txt.
