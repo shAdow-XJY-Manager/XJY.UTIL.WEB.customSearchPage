@@ -9,6 +9,7 @@ import { engineById } from './engines.js';
 import { createPicker } from './picker.js';
 import { setupCollections } from './collections.js';
 import { paintIcon } from './engine-icons.js';
+import { resetWithConfirmation } from './reset.js';
 
 const $ = id => document.getElementById(id);
 const extension = location.protocol === 'chrome-extension:';
@@ -16,7 +17,7 @@ const store = new PreferenceStore({ extension });
 let state = { prefs: defaults(extension), background: null, shortcuts: [], topSitesImported: false };
 let draft = null, pointer = null, composition = false, backgroundUrl = null, renderedBackground = null;
 let frame = 0, busyBackground = false, savingLayout = false;
-let preferenceRevision = 0;
+let preferenceRevision = 0, resetting = false;
 const query = $('query'), shell = $('search-shell'), drawer = $('settings');
 setupSettingsTabs(drawer);
 for (const [code, label] of languages) { const option = new Option(label, code); option.lang = code; $('language').append(option); }
@@ -259,9 +260,15 @@ $('background').addEventListener('error', () => {
 });
 $('background').addEventListener('load', renderBackgroundCard);
 $('reset-all').addEventListener('click', async () => {
-  const next = { ...state, prefs: defaults(extension), background: null, shortcuts: [] };
-  try { state = store.ready ? await store.save(next, { reset: true }) : next; render(); setStatus(store.ready ? '已恢复默认设置。' : '已恢复默认设置，仅在当前页面生效。', !store.ready); }
-  catch { setStatus('恢复失败，已保留当前设置。请重试。', true); }
+  if (resetting || busyBackground || collections.importing) return;
+  resetting = true; $('reset-all').disabled = true;
+  try {
+    const next = await resetWithConfirmation({ state, store, extension, confirm: message => window.confirm(message) });
+    if (!next) return;
+    state = next; render();
+    setStatus(store.ready ? '已恢复默认设置。' : '已恢复默认设置，仅在当前页面生效。', !store.ready);
+  } catch { setStatus('恢复失败，已保留当前设置。请重试。', true); }
+  finally { resetting = false; $('reset-all').disabled = busyBackground || collections.importing; }
 });
 $('edit-layout').addEventListener('click', enterEditing);
 $('save-layout').addEventListener('click', () => { void saveLayout(); });
