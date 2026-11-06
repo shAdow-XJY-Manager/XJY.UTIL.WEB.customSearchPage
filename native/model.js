@@ -9,7 +9,7 @@ export const defaultColors = Object.freeze({ page: 0xfff8f9fa, settings: 0xff5f6
   submit: 0xff5f6368, text: 0xff202124, border: 0xffdadce0, field: 0xffffffff });
 export function defaults(extension = false) {
   return { engine: 'bing', customEngines: [], showShortcuts: true, showAddShortcut: true, newTab: !extension, theme: 'auto', language: 'auto', imageTheme: true, fit: 3, overlay: 0,
-    customColor: false, colors: { ...defaultColors }, layout: { ...defaultLayout } };
+    customColor: false, playback: 'auto', pageMode: 'ambient', colorModes: Object.fromEntries(colorKeys.filter(k => k !== 'page').map(k => [k, 'auto'])), colors: { ...defaultColors }, layout: { ...defaultLayout } };
 }
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const option = (value, count, fallback) => Number.isInteger(value) && value >= 0 && value < count ? value : fallback;
@@ -26,7 +26,10 @@ export function normalizePrefs(raw, extension = false) {
   if (typeof raw.imageTheme === 'boolean') p.imageTheme = raw.imageTheme;
   p.fit = option(raw.fit, 7, p.fit);
   if (finite(raw.overlay) && raw.overlay >= 0 && raw.overlay <= 1) p.overlay = raw.overlay;
+  if (['auto', 'play', 'pause'].includes(raw.playback)) p.playback = raw.playback;
   p.customColor = raw.customColor === true;
+  p.pageMode = ['auto', 'solid', 'ambient'].includes(raw.pageMode) ? raw.pageMode : p.customColor ? 'solid' : raw.imageTheme === false ? 'auto' : 'ambient';
+  for (const key of Object.keys(p.colorModes)) p.colorModes[key] = raw.colorModes?.[key] === 'custom' || !raw.colorModes && p.customColor ? 'custom' : 'auto';
   for (const key of colorKeys) {
     const value = raw.colors?.[key];
     if (Number.isInteger(value) && value >= 0 && value <= 0xffffffff) p.colors[key] = value;

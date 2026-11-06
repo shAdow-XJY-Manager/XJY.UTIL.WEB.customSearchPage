@@ -7,8 +7,8 @@ try { pw = require('playwright'); } catch { pw = require(path.join(execFileSync(
 const root = path.resolve(__dirname,'..'), kind = process.argv[2] || 'chrome';
 assert(['chrome','edge'].includes(kind));
 const executable = process.env.BROWSER_EXECUTABLE || (kind === 'edge' ? '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome');
-const output = path.join(root,'build',`qa-native-${kind}`); fs.mkdirSync(output,{recursive:true});
-const profile = fs.mkdtempSync(path.join(os.tmpdir(),`frequency-${kind}-`));
+const output = path.join(process.env.QA_OUTPUT || root,'build',`qa-native-${kind}`); fs.mkdirSync(output,{recursive:true});
+const profile = fs.mkdtempSync(path.join(process.env.QA_OUTPUT || os.tmpdir(),`frequency-${kind}-`));
 const checks=[], errors=[], external=[], resources=[];
 let browser, context, child, extensionId, activePage;
 const wait = ms => new Promise(resolve=>setTimeout(resolve,ms));
@@ -36,7 +36,7 @@ async function stop() {
   if(browser)await browser.close().catch(()=>{}); child.kill(); await Promise.race([exit,wait(5000)]); browser=null; child=null;
 }
 async function app() {
-  const page=await context.newPage();activePage=page;await page.setViewportSize({width:1280,height:900});
+  const page=await context.newPage();page.on('dialog', dialog=>dialog.type()==='confirm'?dialog.accept():dialog.dismiss());activePage=page;await page.setViewportSize({width:1280,height:900});
   await page.emulateMedia({colorScheme:'light'});
   page.on('request',r=>{if(!r.isNavigationRequest()&&page.url().startsWith(`chrome-extension://${extensionId}/`)){resources.push(r.url());if(/^https?:/.test(r.url()))external.push(r.url())}});
   page.on('pageerror',e=>{if(page.url().startsWith(`chrome-extension://${extensionId}/`))errors.push(e.message)});
@@ -83,6 +83,18 @@ async function selectEngine(page,name){await page.locator('#engine-button').clic
   assert.equal(await page.locator('#settings').evaluate(el=>el.getBoundingClientRect().width),420);
   await page.locator('#theme').selectOption('dark');assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
   await page.locator('#theme').selectOption('light');await closeSettings(page);passed('settings drawer and theme switching');
+  const videoFixture=process.env.QA_OUTPUT && path.join(process.env.QA_OUTPUT,'media-chrome/test-loop.webm');
+  if(videoFixture && fs.existsSync(videoFixture)) {
+    await settings(page); await pickStatus(page,videoFixture,'本地背景已保存。');
+    await page.waitForFunction(()=>document.getElementById('background-video').videoWidth===320&&!document.getElementById('background-video').paused);
+    await page.locator('#ambient').waitFor({state:'visible'});
+    await page.locator('#mode-field').selectOption('custom');
+    await page.locator('#color-field').evaluate(el=>{el.value='#abcdef';el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
+    await page.locator('#ambient').waitFor({state:'visible'});
+    await page.locator('#mode-field').selectOption('auto');
+    await page.locator('#clear-background').click(); await page.waitForFunction(()=>document.getElementById('background-video').hidden); await closeSettings(page);
+    passed('offline extension video playback and independent component colors under MV3 CSP');
+  }
   // Sample the actual button area, including object-fit letterboxing and shade.
   await settings(page);await page.locator('#theme').selectOption('dark');
   const sample=await page.evaluate(()=>{const canvas=document.createElement('canvas');canvas.width=600;canvas.height=300;const ctx=canvas.getContext('2d');ctx.fillStyle='#163c90';ctx.fillRect(0,0,420,300);ctx.fillStyle='#ffffff';ctx.fillRect(420,0,180,300);return canvas.toDataURL('image/png').split(',')[1]});
@@ -103,10 +115,10 @@ async function selectEngine(page,name){await page.locator('#engine-button').clic
   await page.locator('#theme').selectOption('auto');await page.emulateMedia({colorScheme:'light'});
   await page.waitForFunction(expected=>getComputedStyle(document.body).backgroundColor!==expected,tint);
   await page.emulateMedia({colorScheme:'dark'});await page.waitForFunction(expected=>getComputedStyle(document.body).backgroundColor===expected,tint);
-  await page.locator('#image-theme').uncheck();assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(32, 33, 36)');
+  await page.locator('#page-mode').selectOption('auto');assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(17, 19, 21)');
   await closeSettings(page);await page.reload();await page.waitForSelector('html[data-ready="true"]');
-  assert.equal((await read(page)).prefs.imageTheme,false);await settings(page);await page.locator('#image-theme').check();
-  await page.locator('#advanced-colors summary').click();await page.locator('#custom-color').check();
+  assert.equal((await read(page)).prefs.pageMode,'auto');await settings(page);await page.locator('#page-mode').selectOption('ambient');
+  await page.locator('#page-mode').selectOption('solid'); await page.locator('#mode-settings').selectOption('custom');
   await page.locator('#color-page').evaluate(el=>{el.value='#204020';el.dispatchEvent(new Event('change',{bubbles:true}))});
   await page.waitForFunction(()=>getComputedStyle(document.body).backgroundColor==='rgb(32, 64, 32)');
   await page.locator('#color-settings').evaluate(el=>{el.value='#ffcc00';el.dispatchEvent(new Event('change',{bubbles:true}))});
@@ -209,11 +221,11 @@ async function selectEngine(page,name){await page.locator('#engine-button').clic
   // New feature coverage uses disposable data and controlled permission responses.
   await page.emulateMedia({colorScheme:'dark'});
   assert.equal(await page.locator('html').getAttribute('data-theme'),'auto');
-  assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(32, 33, 36)');
+  assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(17, 19, 21)');
   await page.emulateMedia({colorScheme:'light'});
-  assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(248, 249, 250)');
+  assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(246, 247, 242)');
   await settings(page);await page.locator('#theme').selectOption('light');await page.emulateMedia({colorScheme:'dark'});
-  assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(248, 249, 250)');
+  assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(246, 247, 242)');
   await page.locator('#theme').selectOption('auto');await closeSettings(page);await page.emulateMedia({colorScheme:'light'});
   passed('auto theme responds live to system changes; explicit choice takes priority');
   await settings(page,'search');await page.getByText('自定义搜索引擎',{exact:true}).click();await page.locator('#add-engine').click();

@@ -1,3 +1,4 @@
+import { createMedia } from './media.js';
 import { languages, setLanguage, applyLanguage, applyInputDirection, t, setMessage, engineLabel, number, percent } from './i18n.js';
 import { defaults, defaultLayout, colorKeys, argbCss, rgbHex, replaceRgb, searchUrl } from './model.js';
 import { sceneRects, rectLayout, moveRect, resizeRect } from './layout.js';
@@ -21,7 +22,8 @@ let preferenceRevision = 0, resetting = false;
 const query = $('query'), shell = $('search-shell'), drawer = $('settings');
 setupSettingsTabs(drawer);
 for (const [code, label] of languages) { const option = new Option(label, code); option.lang = code; $('language').append(option); }
-const appearance = createAppearance({ image: $('background'), button: $('settings-button'), getPrefs: () => state.prefs });
+const media = createMedia($('background-video'), () => { const b = $('media-playback'); b.textContent = t(media.playing ? '暂停' : '播放'); });
+const appearance = createAppearance({ image: $('background'), video: $('background-video'), button: $('settings-button'), getPrefs: () => state.prefs });
 const view = () => ({ width: window.innerWidth, height: window.innerHeight });
 const fontSize = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 const geometry = () => sceneRects(draft || state.prefs.layout, view(), fontSize(), state.prefs.showShortcuts ? state.shortcuts.length + (state.prefs.showAddShortcut ? 1 : 0) : 0);
@@ -65,27 +67,35 @@ function render() {
   const properties = { page: '--custom-page', settings: '--custom-settings', submit: '--custom-submit',
     text: '--custom-text', border: '--custom-border', field: '--custom-field' };
   for (const key of colorKeys) {
-    if (p.customColor) document.documentElement.style.setProperty(properties[key], argbCss(p.colors[key]));
+    if (key === 'page' ? p.pageMode === 'solid' : p.colorModes[key] === 'custom') document.documentElement.style.setProperty(properties[key], argbCss(p.colors[key]));
     else document.documentElement.style.removeProperty(properties[key]);
     $(`color-${key}`).value = rgbHex(p.colors[key]);
-    $(`color-${key}`).disabled = !p.customColor;
+    $(`color-${key}`).disabled = key === 'page' ? p.pageMode !== 'solid' : p.colorModes[key] !== 'custom';
+    if (key !== 'page') $(`mode-${key}`).value = p.colorModes[key];
   }
   paintIcon($('engine-icon'), p.engine);
   $('engine-button').setAttribute('aria-label', t('切换搜索引擎，当前 {name}', { name: engineLabel(engineById(p.engine, p.customEngines)) }));
   picker.render(); collections.render();
   $('new-tab').checked = p.newTab; $('theme').value = p.theme;
-  $('image-theme').checked = p.imageTheme;
+  $('page-mode').value = p.pageMode;
   $('background-fit').value = String(p.fit); $('overlay').value = String(Math.round(p.overlay * 100));
-  $('overlay-value').value = percent(p.overlay); $('custom-color').checked = p.customColor;
+  $('overlay-value').value = percent(p.overlay);
   const backgroundRevision = state.background ? state.backgroundRevision || state.background : null;
   if (renderedBackground !== backgroundRevision) {
     if (backgroundUrl) URL.revokeObjectURL(backgroundUrl);
     renderedBackground = backgroundRevision;
     backgroundUrl = state.background ? URL.createObjectURL(state.background) : null;
-    if (backgroundUrl) $('background').src = backgroundUrl;
+    appearance.setMedia(state.background);
+    $('background').dataset.dynamic = 'false';
+    media.set(state.background?.type.startsWith('video/') ? backgroundUrl : null);
+    if (backgroundUrl && !state.background?.type.startsWith('video/')) $('background').src = backgroundUrl;
     else $('background').removeAttribute('src');
   }
-  const img = $('background');
+  media.preference(p.playback);
+  const video = state.background?.type.startsWith('video/');
+  $('background').hidden = !backgroundUrl || video; $('background-video').hidden = !backgroundUrl || !video;
+  $('media-playback').hidden = !video;
+  const img = $(video ? 'background-video' : 'background');
   img.hidden = !backgroundUrl; $('shade').hidden = !backgroundUrl;
   img.className = p.fit === 5 ? 'fit-width' : p.fit === 6 ? 'fit-height' : '';
   img.style.objectFit = ['none', 'fill', 'scale-down', 'cover', 'contain'][p.fit] || 'contain';
@@ -98,16 +108,21 @@ function render() {
   renderLayout();
 }
 function renderBackgroundCard() {
-  const file = state.background, image = $('background'), preview = $('background-preview');
-  preview.hidden = !file; $('background-placeholder').hidden = Boolean(file);
-  if (backgroundUrl && preview.getAttribute('src') !== backgroundUrl) preview.src = backgroundUrl;
+  $('media-playback').textContent = t(media.playing ? '暂停' : '播放');
+  const file = state.background, image = $(file?.type.startsWith('video/') ? 'background-video' : 'background'), preview = $('background-preview');
+  preview.hidden = !file || file.type.startsWith('video/');
+  if (file?.type.startsWith('video/') && image.videoWidth && image.readyState >= 2) {
+    const thumbnail = document.createElement('canvas'); const scale = Math.min(320 / image.videoWidth, 180 / image.videoHeight); thumbnail.width = Math.max(1, Math.round(image.videoWidth * scale)); thumbnail.height = Math.max(1, Math.round(image.videoHeight * scale));
+    thumbnail.getContext('2d').drawImage(image, 0, 0, thumbnail.width, thumbnail.height); preview.src = thumbnail.toDataURL(); preview.hidden = false;
+  } $('background-placeholder').hidden = Boolean(file);
+  if (backgroundUrl && !file?.type.startsWith('video/') && preview.getAttribute('src') !== backgroundUrl) preview.src = backgroundUrl;
   if (!backgroundUrl) preview.removeAttribute('src');
   const name = file?.name || t(file ? '当前背景' : '纯色背景');
   $('background-name').textContent = name; $('background-name').title = name;
   const format = file?.type?.split('/')[1]?.toUpperCase().replace('SVG+XML', 'SVG') || t('图片');
-  const dimensions = file && image.complete && image.naturalWidth && image.currentSrc === backgroundUrl ? `${number(image.naturalWidth)} × ${number(image.naturalHeight)}` : '';
+  const dimensions = file && (image.complete || image.readyState >= 2) && (image.naturalWidth || image.videoWidth) && image.currentSrc === backgroundUrl ? `${number(image.naturalWidth || image.videoWidth)} × ${number(image.naturalHeight || image.videoHeight)}` : '';
   $('background-meta').textContent = file ? [format, dimensions, fileSize(file.size)].filter(Boolean).join(' · ') : t('跟随当前主题');
-  $('choose-background').textContent = t(busyBackground ? '读取中…' : file ? '更换图片' : '选择图片');
+  $('choose-background').textContent = t(busyBackground ? '读取中…' : file ? '更换文件' : '选择文件');
 }
 async function persistPreferences(keys) {
   const revision = ++preferenceRevision;
@@ -181,15 +196,38 @@ shell.addEventListener('keydown', event => {
   updateDraft(edge ? resizeRect(currentRect(), edge, dx, dy, searchView(), fontSize()) : moveRect(currentRect(), dx, dy, searchView(), fontSize()));
 });
 const colorLabels = ['页面背景', '设置按钮', '搜索按钮', '搜索文字', '搜索边框', '搜索背景'];
+let committedColors = null, colorRevision = 0, colorEditing = false;
+async function saveColors() {
+  const revision = ++colorRevision;
+  try {
+    const saved = await store.save(state, { prefs: ['colors', 'colorModes', 'pageMode'] });
+    committedColors = structuredClone(saved.prefs);
+    if (revision === colorRevision) { state = saved; render(); }
+  } catch {
+    if (revision !== colorRevision) return;
+    if (committedColors) { state.prefs.colors = { ...committedColors.colors }; state.prefs.colorModes = { ...committedColors.colorModes }; state.prefs.pageMode = committedColors.pageMode; }
+    setStatus('未保存，已保留原数据。请重试。', true); render();
+  }
+}
 colorKeys.forEach((key, index) => {
-  const label = document.createElement('label'); label.className = 'row';
-  const span = document.createElement('span'); span.textContent = colorLabels[index]; span.dataset.i18n = colorLabels[index];
-  const input = document.createElement('input'); input.type = 'color'; input.id = `color-${key}`;
-  input.setAttribute('aria-label', colorLabels[index]); input.setAttribute('data-i18n-aria-label', colorLabels[index]);
-  input.addEventListener('change', () => {
-    state.prefs.colors[key] = replaceRgb(state.prefs.colors[key], input.value); render(); void persistPreferences(['colors']);
-  });
-  label.append(span, input); $('color-fields').append(label);
+  const row = document.createElement('div'); row.className = 'color-row';
+  const span = document.createElement('span'); span.id = `label-${key}`; span.textContent = colorLabels[index]; span.dataset.i18n = colorLabels[index];
+  const input = document.createElement('input'); input.type = 'color'; input.id = `color-${key}`; input.setAttribute('aria-labelledby', span.id);
+  let changed = false;
+  input.addEventListener('focus', () => { colorEditing = true; });
+  input.addEventListener('input', () => { ++colorRevision; committedColors ||= structuredClone(state.prefs); state.prefs.colors = { ...state.prefs.colors, [key]: replaceRgb(state.prefs.colors[key], input.value) }; changed = true; render(); });
+  const commit = () => { if (changed) { changed = false; void saveColors(); } };
+  input.addEventListener('change', () => { if (input.value !== rgbHex(state.prefs.colors[key])) { input.dispatchEvent(new Event('input')); } commit(); }); input.addEventListener('blur', () => { commit(); colorEditing = false; });
+  row.append(span);
+  if (key !== 'page') {
+    const select = document.createElement('select'); select.id = `mode-${key}`; select.setAttribute('aria-labelledby', span.id);
+    for (const [value, text] of [['auto', '自动'], ['custom', '自定义']]) { const o = new Option(text, value); o.dataset.i18n = text; select.append(o); }
+    select.addEventListener('change', () => { committedColors ||= structuredClone(state.prefs); state.prefs.colorModes = { ...state.prefs.colorModes, [key]: select.value }; render(); void saveColors(); }); row.append(select);
+  }
+  row.append(input);
+  const reset = document.createElement('button'); reset.type = 'button'; reset.textContent = '重置'; reset.dataset.i18n = '重置'; reset.setAttribute('aria-describedby', span.id);
+  reset.addEventListener('click', () => { committedColors ||= structuredClone(state.prefs); state.prefs.colors = { ...state.prefs.colors, [key]: defaults(extension).colors[key] }; if (key !== 'page') state.prefs.colorModes = { ...state.prefs.colorModes, [key]: 'auto' }; else state.prefs.pageMode = 'auto'; render(); void saveColors(); }); row.append(reset);
+  $(key === 'page' ? 'page-color-fields' : 'color-fields').append(row);
 });
 query.addEventListener('compositionstart', () => { composition = true; });
 query.addEventListener('compositionend', () => { composition = false; });
@@ -224,8 +262,8 @@ $('language').addEventListener('change', event => { state.prefs.language = event
 window.addEventListener('languagechange', () => { if (state.prefs.language === 'auto') render(); });
 document.addEventListener('input', event => { if (event.target.matches('[data-auto-dir]')) applyInputDirection(event.target); });
 $('theme').addEventListener('change', event => { state.prefs.theme = event.target.value; render(); void persistPreferences(['theme']); });
-$('image-theme').addEventListener('change', event => { state.prefs.imageTheme = event.target.checked; render(); void persistPreferences(['imageTheme']); });
-$('custom-color').addEventListener('change', event => { state.prefs.customColor = event.target.checked; render(); void persistPreferences(['customColor']); });
+$('page-mode').addEventListener('change', event => { committedColors ||= structuredClone(state.prefs); state.prefs.pageMode = event.target.value; render(); void saveColors(); });
+$('media-playback').addEventListener('click', () => { state.prefs.playback = media.toggle() ? 'play' : 'pause'; void persistPreferences(['playback']); });
 $('background-fit').addEventListener('change', event => { state.prefs.fit = Number(event.target.value); render(); void persistPreferences(['fit']); });
 $('overlay').addEventListener('input', event => {
   state.prefs.overlay = Number(event.target.value) / 100;
@@ -259,13 +297,15 @@ $('background').addEventListener('error', () => {
   if (state.background) { state.background = null; render(); setStatus('背景无法读取，已使用纯色背景。', true); }
 });
 $('background').addEventListener('load', renderBackgroundCard);
+$('background-video').addEventListener('loadeddata', renderBackgroundCard);
+$('background-video').addEventListener('error', () => { if (state.background?.type.startsWith('video/')) setStatus('媒体无法解码，请选择其他文件。', true); });
 $('reset-all').addEventListener('click', async () => {
   if (resetting || busyBackground || collections.importing) return;
   resetting = true; $('reset-all').disabled = true;
   try {
     const next = await resetWithConfirmation({ state, store, extension, confirm: message => window.confirm(message) });
     if (!next) return;
-    state = next; render();
+    state = next; committedColors = structuredClone(state.prefs); ++colorRevision; render();
     setStatus(store.ready ? '已恢复默认设置。' : '已恢复默认设置，仅在当前页面生效。', !store.ready);
   } catch { setStatus('恢复失败，已保留当前设置。请重试。', true); }
   finally { resetting = false; $('reset-all').disabled = busyBackground || collections.importing; }
@@ -275,21 +315,21 @@ $('save-layout').addEventListener('click', () => { void saveLayout(); });
 $('cancel-layout').addEventListener('click', () => { if (!savingLayout) leaveEditing(); });
 $('reset-layout').addEventListener('click', () => { if (!savingLayout) { draft = { ...defaultLayout }; renderLayout(); } });
 async function refreshState() {
-  if (!store.ready || draft || busyBackground || collections.modalOpen || collections.importing || document.hidden) return;
-  try { state = await store.refresh(); render(); } catch { /* Keep the current page usable until an explicit save/reload. */ }
+  if (!store.ready || colorEditing || draft || busyBackground || collections.modalOpen || collections.importing || document.hidden) return;
+  try { state = await store.refresh(); committedColors = structuredClone(state.prefs); render(); } catch { /* Keep the current page usable until an explicit save/reload. */ }
 }
 window.addEventListener('focus', () => { void refreshState(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshState(); });
 window.addEventListener('resize', scheduleLayout);
 new ResizeObserver(scheduleLayout).observe($('font-probe'));
-window.addEventListener('pagehide', () => { if (backgroundUrl) URL.revokeObjectURL(backgroundUrl); backgroundUrl = null; renderedBackground = null; store.close(); });
+window.addEventListener('pagehide', () => { media.dispose(); appearance.dispose(); if (backgroundUrl) URL.revokeObjectURL(backgroundUrl); backgroundUrl = null; renderedBackground = null; store.close(); });
 window.addEventListener('pageshow', async event => {
   if (!event.persisted) return;
-  try { state = await store.load(); } catch { setStatus('浏览器存储不可用，设置仅在当前页面生效。', true); }
+  try { state = await store.load(); committedColors = structuredClone(state.prefs); } catch { setStatus('浏览器存储不可用，设置仅在当前页面生效。', true); }
   render();
 });
 render(); document.querySelector('.drawer-content').inert = true;
-try { state = await store.load(); if (state.notice) setStatus(state.notice, true); }
+try { state = await store.load(); committedColors = structuredClone(state.prefs); if (state.notice) setStatus(state.notice, true); }
 catch { setStatus('浏览器存储不可用，设置仅在当前页面生效。重新加载后可重试。', true); }
 render(); document.querySelector('.drawer-content').inert = false; query.disabled = false; $('engine-button').disabled = false; $('submit').disabled = false;
 document.documentElement.dataset.ready = 'true';

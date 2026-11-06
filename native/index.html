@@ -12,7 +12,7 @@
 <body>
   <span id="font-probe" aria-hidden="true"></span>
   <canvas id="ambient" aria-hidden="true" hidden></canvas>
-  <img id="background" alt="" hidden>
+  <img id="background" alt="" hidden><video id="background-video" muted loop playsinline hidden></video>
   <div id="shade" hidden></div>
   <main id="scene">
     <div id="search-shell" role="group" aria-label="搜索框布局" tabindex="-1" data-i18n-aria-label="搜索框布局">
@@ -53,14 +53,14 @@
     </nav>
     <div class="drawer-content">
       <div id="panel-appearance" class="settings-panel" role="tabpanel" aria-labelledby="tab-appearance">
-        <section class="background-section"><h2 data-i18n="背景图片">背景图片</h2>
+        <section class="background-section"><h2 data-i18n="背景媒体">背景媒体</h2>
           <figure class="background-card">
             <div class="background-preview-frame"><img id="background-preview" alt="当前背景预览" hidden data-i18n-alt="当前背景预览"><div id="background-placeholder"><span class="icon icon-image" aria-hidden="true"></span><span data-i18n="纯色背景">纯色背景</span></div></div>
             <figcaption><span id="background-name" data-i18n="纯色背景">纯色背景</span><span id="background-meta" data-i18n="跟随当前主题">跟随当前主题</span></figcaption>
           </figure>
-          <div class="background-actions"><button id="choose-background" class="primary" type="button" data-i18n="选择图片">选择图片</button><button id="clear-background" class="quiet" type="button" data-i18n="恢复纯色">恢复纯色</button></div>
-          <input id="background-file" type="file" accept="image/*" hidden>
-          <p class="hint original-hint" data-i18n="新选择的图片按原图保存在本机。">新选择的图片按原图保存在本机。</p>
+          <div class="background-actions"><button id="choose-background" class="primary" type="button" data-i18n="选择文件">选择文件</button><button id="clear-background" class="quiet" type="button" data-i18n="恢复纯色">恢复纯色</button></div>
+          <button id="media-playback" type="button" hidden>播放</button><p class="hint" data-i18n="视频最大为 100 MiB。">视频最大为 100 MiB。</p><input id="background-file" type="file" accept="image/*,video/mp4,video/webm,.mp4,.webm" hidden>
+          <p class="hint original-hint" data-i18n="原文件仅保存在本机。">原文件仅保存在本机。</p>
           <div class="control-group">
             <label class="row" for="background-fit"><span data-i18n="图片适配">图片适配</span><select id="background-fit"><option value="0" data-i18n="原始大小">原始大小</option><option value="1" data-i18n="拉伸">拉伸</option><option value="2" data-i18n="缩小">缩小</option><option value="3" data-i18n="覆盖">覆盖</option><option value="4" data-i18n="包含">包含</option><option value="5" data-i18n="适应宽度">适应宽度</option><option value="6" data-i18n="适应高度">适应高度</option></select></label>
             <div class="slider-setting"><label class="row" for="overlay"><span data-i18n="背景遮罩">背景遮罩</span><output id="overlay-value" for="overlay">0%</output></label><input id="overlay" type="range" min="0" max="100" step="1" aria-label="背景遮罩" data-i18n-aria-label="背景遮罩"></div>
@@ -69,9 +69,12 @@
         <section><h2 data-i18n="主题">主题</h2><div class="control-group">
 
           <label class="row" for="theme"><span data-i18n="主题">主题</span><select id="theme"><option value="auto" data-i18n="跟随系统">跟随系统</option><option value="light" data-i18n="浅色">浅色</option><option value="dark" data-i18n="深色">深色</option></select></label>
-          <label class="row" for="image-theme"><span data-i18n="匹配图片底色">匹配图片底色</span><input id="image-theme" type="checkbox" role="switch"></label>
-        </div>
-          <details id="advanced-colors" class="settings-disclosure"><summary data-i18n="自定义颜色">自定义颜色</summary><label class="row" for="custom-color"><span data-i18n="启用自定义颜色">启用自定义颜色</span><input id="custom-color" type="checkbox" role="switch"></label><div id="color-fields"></div><p class="hint" data-i18n="自定义页面颜色优先于图片取色。">自定义页面颜色优先于图片取色。</p></details>
+        </div></section>
+        <section><h2 data-i18n="页面底色">页面底色</h2>
+          <select id="page-mode" aria-label="页面底色" data-i18n-aria-label="页面底色"><option value="auto" data-i18n="跟随主题">跟随主题</option><option value="solid" data-i18n="自定义纯色">自定义纯色</option><option value="ambient" data-i18n="背景环境光">背景环境光</option></select>
+          <div id="page-color-fields"></div>
+        </section>
+        <section><h2 data-i18n="组件颜色">组件颜色</h2><div id="color-fields"></div>
         </section>
         <section><h2 data-i18n="搜索框布局">搜索框布局</h2><button id="edit-layout" class="wide-button" type="button"><span class="icon icon-grid" aria-hidden="true"></span><span data-i18n="编辑布局">编辑布局</span></button><p class="hint" data-i18n="拖动移动，拉伸边缘调整大小。">拖动移动，拉伸边缘调整大小。</p></section>
       </div>

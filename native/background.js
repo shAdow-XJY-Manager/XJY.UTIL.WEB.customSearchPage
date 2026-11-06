@@ -1,6 +1,8 @@
+import { isVideo, validateVideo } from './media.js';
 import { number } from './i18n.js';
 export async function processBackground(file) {
   if (!file) return null;
+  if (isVideo(file)) return validateVideo(file);
   const url = URL.createObjectURL(file);
   try {
     await new Promise((resolve, reject) => {

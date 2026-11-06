@@ -1,0 +1,29 @@
+name: Release extension
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify release version
+        run: node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));const m=JSON.parse(fs.readFileSync('extension/manifest.json'));if(process.env.GITHUB_REF_NAME!=='v'+p.version||m.version!==p.version)process.exit(1)"
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:size
+      - name: Publish ZIP and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          cd build/releases
+          sha256sum "frequency-search-${version}.zip" > SHA256SUMS.txt
+          gh release create "$GITHUB_REF_NAME" "frequency-search-${version}.zip" SHA256SUMS.txt --verify-tag --title "Frequency Search ${version}" --notes-file ../../RELEASE_NOTES.md

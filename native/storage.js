@@ -49,7 +49,7 @@ export class PreferenceStore {
   async open() {
     if (!this.idb) throw new Error('浏览器存储不可用。');
     // Close v1 readers before upgrading, preventing old tabs from overwriting new fields.
-    const request = this.idb.open(this.name, 2);
+    const request = this.idb.open(this.name, 3);
     request.onupgradeneeded = () => {
       if (!request.result.objectStoreNames.contains('state')) request.result.createObjectStore('state');
       if (!request.result.objectStoreNames.contains('upgrade-backup')) request.result.createObjectStore('upgrade-backup');
@@ -67,13 +67,14 @@ export class PreferenceStore {
     await this.open();
     const record = await requestValue(this.db.transaction('state').objectStore('state').get('current'));
     let state;
-    if (record?.schema > 3) throw new Error('此数据由更新版本保存，请更新扩展后再打开。');
-    if ([2, 3].includes(record?.schema) && record.migrated === true) {
+    if (record?.schema > 4) throw new Error('此数据由更新版本保存，请更新扩展后再打开。');
+    if ([2, 3, 4].includes(record?.schema) && record.migrated === true) {
       state = { prefs: normalizePrefs(record.prefs, this.extension),
         background: record.background instanceof Blob ? record.background : null,
         shortcuts: normalizeShortcuts(record.shortcuts), topSitesImported: record.topSitesImported === true,
+        backgroundKind: record.background?.type?.startsWith('video/') ? 'video' : record.background ? 'image' : null,
         backgroundRevision: record.background ? record.backgroundRevision || 'legacy' : null };
-      if (record.schema === 2) await this.write(state, record);
+      if (record.schema < 4) Object.assign(state, await this.write(state, record));
     } else {
       const legacy = await readLegacy(this.idb, this.legacyName);
       state = { prefs: migratePrefs(legacy, this.extension), background: legacyBackground(legacy), shortcuts: [], topSitesImported: false };
@@ -93,7 +94,7 @@ export class PreferenceStore {
       const records = tx.objectStore('state'), request = records.get('current');
       request.onsuccess = () => {
         const current = request.result;
-        if (current?.schema > 3) { tx.abort(); return; }
+        if (current?.schema > 4) { tx.abort(); return; }
         let prefs = state.prefs;
         if (fields && !fields.reset) {
           prefs = { ...normalizePrefs(current?.prefs, this.extension) };
@@ -105,10 +106,11 @@ export class PreferenceStore {
           shortcuts: !fields || fields.reset || fields.shortcuts ? state.shortcuts || [] : normalizeShortcuts(current?.shortcuts),
           // A stale tab or reset must never clear a successful one-time import.
           topSitesImported: state.topSitesImported === true || current?.topSitesImported === true };
+        saved.backgroundKind = saved.background?.type?.startsWith('video/') ? 'video' : saved.background ? 'image' : null;
         saved.backgroundRevision = !saved.background ? null : !fields || fields.background || fields.reset ?
           `${Date.now()}-${Math.random().toString(36).slice(2)}` : current?.backgroundRevision || 'legacy';
-        records.put({ schema: 3, migrated: true, ...saved }, 'current');
-        if (previous) tx.objectStore('upgrade-backup').put(previous, '1.2.0');
+        records.put({ schema: 4, migrated: true, ...saved }, 'current');
+        if (previous) tx.objectStore('upgrade-backup').put(previous, previous.schema === 2 ? '1.2.0' : `schema-${previous.schema}`);
       };
     });
   }
@@ -125,10 +127,11 @@ export class PreferenceStore {
     await this.queue.catch(() => {});
     if (!this.ready) throw new Error('浏览器存储不可用。');
     const record = await requestValue(this.db.transaction('state').objectStore('state').get('current'));
-    if (record?.schema !== 3) throw new Error('请重新加载页面。');
+    if (record?.schema !== 4) throw new Error('请重新加载页面。');
     return { prefs: normalizePrefs(record.prefs, this.extension), background: record.background || null,
       shortcuts: normalizeShortcuts(record.shortcuts), topSitesImported: record.topSitesImported === true,
-      backgroundRevision: record.background ? record.backgroundRevision || 'legacy' : null };
+      backgroundKind: record.background?.type?.startsWith('video/') ? 'video' : record.background ? 'image' : null,
+        backgroundRevision: record.background ? record.backgroundRevision || 'legacy' : null };
   }
   close() { this.db?.close(); this.ready = false; }
 }

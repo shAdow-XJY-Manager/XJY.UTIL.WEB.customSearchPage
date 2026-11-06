@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -18,6 +19,8 @@ for (const extension of [false, true]) {
   await build({ configFile: path.join(root, 'vite.config.js'), base: extension ? './' : base,
     build: { outDir: output, emptyOutDir: true, target: 'es2022', sourcemap: false, minify: true } });
   fs.cpSync(path.join(root, 'native/licenses'), path.join(output, 'licenses'), { recursive: true });
+  fs.copyFileSync(path.join(root, 'LICENSE'), path.join(output, 'licenses/PROJECT-MIT.txt'));
+  fs.copyFileSync(path.join(root, 'NOTICE.md'), path.join(output, 'licenses/PROJECT-NOTICE.md'));
   if (!extension) {
     fs.copyFileSync(path.join(root, 'web/favicon.png'), path.join(output, 'favicon.png'));
     fs.mkdirSync(path.join(output, 'icons'), { recursive: true });
@@ -53,6 +56,7 @@ for (const extension of [false, true]) {
   fs.rmSync(zip, { force: true });
   execFileSync('zip', ['-q', '-r', zip, '.', '-x', '*.DS_Store'], { cwd: output });
   const size = checkSize(output, zip);
+  fs.writeFileSync(path.join(root, 'build/releases/SHA256SUMS.txt'), `${createHash('sha256').update(fs.readFileSync(zip)).digest('hex')}  ${path.basename(zip)}\n`);
   const final = path.join(root, 'build/extension');
   fs.rmSync(final, { recursive: true, force: true }); fs.renameSync(output, final);
   fs.writeFileSync(path.join(root, 'build/releases/size-report.json'), JSON.stringify({ version, ...size }, null, 2));

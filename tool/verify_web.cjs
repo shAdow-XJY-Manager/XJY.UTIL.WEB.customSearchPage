@@ -2,7 +2,7 @@
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http');
 const { execFileSync } = require('node:child_process'), assert = require('node:assert/strict');
 let pw; try { pw = require('playwright'); } catch { pw = require(path.join(execFileSync('npm', ['root', '-g'], { encoding: 'utf8' }).trim(), 'playwright')); }
-const root = path.resolve(__dirname, '..'), output = path.join(root, /edge/i.test(process.env.BROWSER_EXECUTABLE || '') ? 'build/qa-web-edge' : 'build/qa-web');
+const root = path.resolve(__dirname, '..'), output = path.join(process.env.QA_OUTPUT || root, /edge/i.test(process.env.BROWSER_EXECUTABLE || '') ? 'build/qa-web-edge' : 'build/qa-web');
 const prefix = '/XJY.UTIL.WEB.customSearchPage/', directory = path.join(root, 'build/web');
 const errors = [], external = [], checks = []; fs.mkdirSync(output, { recursive: true });
 const server = http.createServer((request, response) => {
@@ -19,13 +19,13 @@ let browser;
   const url = `http://127.0.0.1:${server.address().port}${prefix}`;
   browser = await pw.chromium.launch({ executablePath: process.env.BROWSER_EXECUTABLE || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'light', locale: 'zh-CN' });
-  const page = await context.newPage(); page.on('pageerror', error => errors.push(error.message));
+  const page = await context.newPage(); page.on('dialog', dialog=>dialog.type()==='confirm'?dialog.accept():dialog.dismiss()); page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => { if (!request.isNavigationRequest() && /^https?:/.test(request.url()) && !request.url().startsWith(url)) external.push(request.url()); });
   await page.goto(url); await page.waitForSelector('html[data-ready="true"]');
   assert.equal(await page.title(), '新标签页'); assert.equal(await page.locator('#new-tab').isChecked(), true);
-  assert.equal(await page.locator('html').getAttribute('data-theme'), 'auto'); assert(await page.locator('#image-theme').isChecked()); checks.push('production subpath and website defaults');
+  assert.equal(await page.locator('html').getAttribute('data-theme'), 'auto'); assert.equal(await page.locator('#page-mode').inputValue(),'ambient'); checks.push('production subpath and website defaults');
   await page.emulateMedia({ colorScheme: 'dark' });
-  assert.equal(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(32, 33, 36)');
+  assert.equal(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(17, 19, 21)');
   await page.emulateMedia({ colorScheme: 'light', locale: 'zh-CN' }); checks.push('live system theme');
   await page.locator('#settings-button').click(); await page.locator('#tab-search').click(); assert(await page.locator('#import-sites').isDisabled());
   await page.getByText('自定义搜索引擎', { exact: true }).click(); await page.locator('#add-engine').click();
@@ -99,6 +99,7 @@ let browser;
   const cache = await page.evaluate(async()=>{const c=await caches.open('frequency-engine-icons-v1');return (await c.keys()).map(r=>r.url)});
   assert(cache.some(url=>url.includes('/github.svg')), 'official CDN icons cached locally');
   await page.locator('#close-settings').click(); await page.locator('#engine-button').click(); await page.locator('[data-engine="github"]').click();
+  await page.waitForFunction(()=>new Promise(resolve=>{const request=indexedDB.open('frequency_search_v2');request.onsuccess=()=>{const db=request.result;const r=db.transaction('state').objectStore('state').get('current');r.onsuccess=()=>{resolve(r.result?.prefs.engine==='github');db.close()}}}));
   await context.route('https://cdn.jsdelivr.net/**', route=>route.abort());
   await page.reload(); await page.waitForSelector('html[data-ready="true"]');
   await page.waitForFunction(()=>document.getElementById('engine-icon').src.startsWith('blob:')&&document.getElementById('engine-icon').naturalWidth>0);

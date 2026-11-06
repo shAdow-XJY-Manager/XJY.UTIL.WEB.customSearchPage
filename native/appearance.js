@@ -1,19 +1,23 @@
+import { createAnimatedSampler } from './animated-image.js';
 import { dominantColor, buttonColors, rgbCss, imageContentRect } from './image-theme.js';
 
-export function createAppearance({ image, button, getPrefs }) {
+export function createAppearance({ image: still, video, button, getPrefs }) {
+  const animated = createAnimatedSampler();
+  let image = still;
+  const dimensions = () => ({ width: image.videoWidth || image.naturalWidth, height: image.videoHeight || image.naturalHeight });
   const root = document.documentElement, canvas = document.createElement('canvas');
   const context = canvas.getContext('2d', { willReadFrequently: true });
   const ambient = document.getElementById('ambient'), glow = ambient.getContext('2d');
   const systemTheme = matchMedia('(prefers-color-scheme: dark)');
   let source = null, dominant = null, sourcePixels = null, frame = 0;
-  const ready = () => !image.hidden && image.complete && image.naturalWidth > 0 && image.currentSrc;
+  const ready = () => !image.hidden && (image === video ? video.readyState >= 2 : image.complete) && dimensions().width > 0 && image.currentSrc;
   function palette() {
     if (!ready()) { source = null; dominant = null; return; }
-    if (source === image.currentSrc) return;
+    if (source === image.currentSrc && image !== video && image.dataset.dynamic !== 'true') return;
     source = image.currentSrc; dominant = null;
     if (!context) return;
     canvas.width = canvas.height = 48;
-    context.drawImage(image, 0, 0, 48, 48);
+    context.drawImage(image === still && animated.canvas || image, 0, 0, 48, 48);
     sourcePixels = context.getImageData(0, 0, 48, 48).data;
     dominant = dominantColor(sourcePixels);
   }
@@ -32,11 +36,11 @@ export function createAppearance({ image, button, getPrefs }) {
     }
     if (ready()) {
       const bounds = image.getBoundingClientRect();
-      const rect = imageContentRect(bounds, { width: image.naturalWidth, height: image.naturalHeight }, getComputedStyle(image).objectFit);
+      const rect = imageContentRect(bounds, dimensions(), getComputedStyle(image).objectFit);
       context.save();
       context.setTransform(24 / box.width, 0, 0, 24 / box.height, -box.x * 24 / box.width, -box.y * 24 / box.height);
       context.beginPath(); context.rect(bounds.x, bounds.y, bounds.width, bounds.height); context.clip();
-      context.drawImage(image, rect.x, rect.y, rect.width, rect.height); context.restore();
+      context.drawImage(image === still && animated.canvas || image, rect.x, rect.y, rect.width, rect.height); context.restore();
       context.globalAlpha = getPrefs().overlay; context.fillStyle = '#111315'; context.fillRect(0, 0, 24, 24); context.globalAlpha = 1;
     }
     const pixels = context.getImageData(0, 0, 24, 24).data, sums = [0, 0, 0];
@@ -44,19 +48,21 @@ export function createAppearance({ image, button, getPrefs }) {
     return sums.map(value => Math.round(value / (pixels.length / 4)));
   }
   function update() {
+    image = video.hidden ? still : video;
     const prefs = getPrefs(), dark = prefs.theme === 'dark' || prefs.theme === 'auto' && systemTheme.matches;
     try { palette(); } catch { dominant = null; }
     root.style.removeProperty('--image-page');
-    ambient.hidden = !dominant || !prefs.imageTheme || prefs.customColor;
+    ambient.hidden = !dominant || prefs.pageMode !== 'ambient';
     if (!ambient.hidden && glow) {
       // Small analysis surface only: the saved image and foreground stay original.
       // Preserve spatial colors instead of flattening the picture to one swatch.
       const bounds = image.getBoundingClientRect();
-      const rect = imageContentRect(bounds, { width: image.naturalWidth, height: image.naturalHeight }, getComputedStyle(image).objectFit);
+      const rect = imageContentRect(bounds, dimensions(), getComputedStyle(image).objectFit);
       const width = innerWidth + 48, height = innerHeight + 48;
       ambient.width = 160; ambient.height = Math.max(1, Math.round(160 * height / width));
       const output = glow.createImageData(ambient.width, ambient.height);
-      const base = dark ? [32, 33, 36] : [248, 249, 250];
+      const baseHex = getComputedStyle(root).getPropertyValue('--page').trim();
+      const base = /^#[a-f\d]{6}$/i.test(baseHex) ? [1,3,5].map(i => parseInt(baseHex.slice(i, i+2), 16)) : dark ? [17,19,21] : [246,247,242];
       const spread = Math.max(180, Math.min(innerWidth, innerHeight) * .3);
       for (let y = 0; y < ambient.height; y++) for (let x = 0; x < ambient.width; x++) {
         const px = x / ambient.width * width - 24, py = y / ambient.height * height - 24;
@@ -80,15 +86,28 @@ export function createAppearance({ image, button, getPrefs }) {
       return;
     }
     const value = prefs.colors.settings;
-    const custom = prefs.customColor ? [(value >>> 16) & 255, (value >>> 8) & 255, value & 255] : null;
+    const custom = prefs.colorModes.settings === 'custom' ? [(value >>> 16) & 255, (value >>> 8) & 255, value & 255] : null;
     const colors = buttonColors(backdrop, custom);
     button.style.setProperty('--settings-ink', rgbCss(colors.icon));
     button.style.setProperty('--settings-surface', rgbCss(colors.surface));
     button.style.setProperty('--settings-outline', colors.outline);
   }
   function schedule() { if (!frame) frame = requestAnimationFrame(() => { frame = 0; update(); }); }
-  image.addEventListener('load', schedule); image.addEventListener('error', () => { source = null; dominant = null; schedule(); });
+  let timer = null, epoch = 0;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  function stop() { ++epoch; clearTimeout(timer); timer = null; if (frame) cancelAnimationFrame(frame); frame = 0; }
+  async function tick() {
+    const token = epoch; timer = null;
+    if (document.hidden) return;
+    const dynamic = !video.hidden ? !video.paused : still.dataset.dynamic === 'true' && !reduced.matches;
+    if (dynamic) { if (image === still) await animated.tick(); if (document.hidden || token !== epoch) return; update(); timer = setTimeout(tick, 100); }
+  }
+  function resume() { stop(); schedule(); if (!document.hidden) timer = setTimeout(tick, 100); }
+  still.addEventListener('load', resume); still.addEventListener('error', () => { source = null; dominant = null; resume(); });
+  for (const event of ['loadeddata', 'play', 'pause', 'seeked']) video.addEventListener(event, resume);
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : resume());
+  reduced.addEventListener('change', resume);
   systemTheme.addEventListener('change', schedule); window.addEventListener('resize', schedule);
   new ResizeObserver(schedule).observe(button);
-  return { update, schedule };
+  return { update, schedule, stop, resume, setMedia(file) { void animated.set(file).then(() => { still.dataset.dynamic = String(Boolean(animated.canvas)); resume(); }); }, dispose() { stop(); animated.close(); } };
 }
